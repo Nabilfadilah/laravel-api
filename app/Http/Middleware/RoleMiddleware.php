@@ -17,7 +17,11 @@ class RoleMiddleware
         // }
 
         if (!$request->user() || $request->user()->role !== $role) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            // return response()->json(['message' => 'Unauthorized'], 403);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Akses ditolak. Hanya ' . $role . ' yang dapat mengakses route ini.'
+            ], 403);
         }
 
         return $next($request);
