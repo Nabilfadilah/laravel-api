@@ -10,13 +10,17 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** 
+     * Trait bawaan Laravel:
+     * - HasApiTokens: untuk fitur token authentication (Sanctum)
+     * - HasFactory: untuk factory (digunakan saat testing/seeding)
+     * - Notifiable: untuk fitur notifikasi
+     */
     use HasFactory, Notifiable, HasApiTokens;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
+     * Atribut yang boleh diisi secara massal (mass assignment).
+     * Hanya field ini yang bisa diisi menggunakan create/update dari request.
      */
     protected $fillable = [
         'name',
@@ -26,9 +30,8 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
+     * Atribut yang disembunyikan saat model dikonversi ke array atau JSON.
+     * Tujuannya agar data sensitif seperti password tidak ikut terkirim.
      */
     protected $hidden = [
         'password',
@@ -36,9 +39,9 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Casting atribut ke tipe data tertentu.
+     * - email_verified_at di-cast menjadi objek DateTime
+     * - password akan otomatis di-hash saat diset (fitur Laravel 10+)
      */
     protected function casts(): array
     {
@@ -48,7 +51,10 @@ class User extends Authenticatable
         ];
     }
 
-    // relasi antara table product
+    /**
+     * Relasi antara User dan Product (One To Many).
+     * Artinya: 1 user bisa punya banyak produk.
+     */
     public function products()
     {
         return $this->hasMany(Product::class);
