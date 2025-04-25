@@ -9,19 +9,19 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    // get all users
+    // ambil semua user (dengan pagination)
     public function index()
     {
-        // return User::all(); // mengembalikan semua data user
+        // ambil data user dengan pagination 10 per halaman
+        $users = User::paginate(10);
 
-        $users = User::paginate(10); // atau pakai ->get() kalau tidak mau paginate
-
+        // balikan data dalam bentuk JSON dengan resource + info pagination
         return response()->json([
             'status' => 'success',
             'message' => 'Daftar user berhasil diambil',
             'data' => [
-                'users' => UserResource::collection($users->items()),
-                'pagination' => [
+                'users' => UserResource::collection($users->items()), // Format data user
+                'pagination' => [ // Info pagination untuk frontend
                     'currentPage' => $users->currentPage(),
                     'perPage' => $users->perPage(),
                     'total' => $users->total(),
@@ -31,18 +31,23 @@ class UserController extends Controller
         ], 200);
     }
 
-    // update user
+    // update data user
     public function update(Request $request, $id)
     {
+        // validasi data yang dikirimkan (opsional, tergantung field yang dikirim)
         $request->validate([
             'name' => 'sometimes|string|max:225',
             'email' => 'sometimes|string|unique:users,email,' . $id,
-            'role' => 'in:user,admin', // batasi pilihan role
+            'role' => 'in:user,admin', // Role hanya boleh user atau admin
         ]);
 
+        // cari user berdasarkan ID, kalau tidak ketemu akan throw 404
         $user = User::findOrFail($id);
+
+        // update data user dengan hanya field name, email, dan role
         $user->update($request->only(['name', 'email', 'role']));
 
+        // kembalikan response sukses beserta data user yang telah diubah
         return response()->json([
             'status' => 'success',
             'message' => 'User berhasil diperbarui',
@@ -50,31 +55,40 @@ class UserController extends Controller
         ], 200);
     }
 
-    // delete user
+    // hapus user
     public function destroy($id)
     {
+        // cari user berdasarkan ID
         $user = User::findOrFail($id);
+
+        // hapus user dari database
         $user->delete();
 
+        // kembalikan response sukses
         return response()->json([
             'status' => 'success',
             'message' => 'User berhasil dihapus'
         ], 200);
     }
 
-    // Reset password
+    // reset password user
     public function resetPassword(Request $request, $id)
     {
+        // validasi input password baru
         $request->validate([
             'new_password' => 'required|string|min:8',
             'confirm_password' => 'required|string|same:new_password'
         ]);
 
+        // cari user berdasarkan ID
         $user = User::findOrFail($id);
+
+        // update password user (dienkripsi dengan bcrypt)
         $user->update([
             'password' => bcrypt($request->new_password)
         ]);
 
+        // kembalikan response sukses
         return response()->json([
             'status' => 'success',
             'message' => 'Password berhasil direset',
