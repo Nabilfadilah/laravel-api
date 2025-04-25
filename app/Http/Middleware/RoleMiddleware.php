@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RoleMiddleware
 {
+    // middleware untuk membatasi akses berdasarkan role
     public function handle(Request $request, Closure $next, string $role): Response
     {
         // if ($request->user()->role !== $role) {
@@ -16,6 +17,7 @@ class RoleMiddleware
         //     ], 403);
         // }
 
+        // cek apakah user login dan role-nya sesuai
         if (!$request->user() || $request->user()->role !== $role) {
             // return response()->json(['message' => 'Unauthorized'], 403);
             return response()->json([
@@ -24,6 +26,6 @@ class RoleMiddleware
             ], 403);
         }
 
-        return $next($request);
+        return $next($request); // lanjut ke proses selanjutnya
     }
 }
